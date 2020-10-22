@@ -1,20 +1,28 @@
-#Rafael Marinho
-#fdtd Makefile
+# Rafael Marinho
+# fdtd Makefile
 
-.PHONY: all clean
+CXX	:= g++
+CXXFLAGS := -Wall -O2 -L/usr/lib64
+INCLUDES := -lstdc++ -lm -lhdf5 -llapack -lopenblas -larmadillo -ldl
+APPFLAGS := -DARMA_DONT_USE_WRAPPER -DARMA_USE_BLAS -DARMA_USE_LAPACK -DARMA_USE_HDF5
 
-CORE = $(basename $(FILE))
-OUTPUT = fdtd
+SOURCES := $(wildcard *.cpp)
+OBJECTS := $(subst generator,generated_source,$(SOURCES:.cpp=.o))
+APP := fdtd
 
 all:	fdtd
 
-fdtd:	$(CORE).o
-	g++ $(CORE).o -o $(OUTPUT)
+fdtd:	$(OBJECTS)
+	$(CXX) $(INCLUDES) $^ -o $(APP)
 
-$(CORE).o:	
-	g++ $(CORE).cpp -larmadillo -lstdc++ -lm -lhdf5 -o $(CORE).o
+%.o:	%.cpp
+	$(CXX) $(CXXFLAGS) $(APPFLAGS) $(INCLUDES) -c $^ -o $@
+
+fd3d: fd3d.cxx
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
 
 clean:
 	rm -rf *.o 
-	rm -rf $(OUTPUT)
+	rm -rf $(APP)
+	rm -rf fd3d
 
