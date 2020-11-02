@@ -8,6 +8,7 @@ void fdtd1d(int ke, int nsteps, int verbose, double frequency_signal, double del
     vec ex(ke,fill::zeros);
     vec dx(ke,fill::zeros);
     vec ix(ke,fill::zeros);
+    vec sx(ke,fill::zeros);
     vec hy(ke,fill::zeros);
 
     vec boundary_low(2,fill::zeros);
@@ -21,25 +22,31 @@ void fdtd1d(int ke, int nsteps, int verbose, double frequency_signal, double del
     // create bank of frequencies
     int n_freq = 3;
     vec freq(n_freq);
-    freq[0] = 500e6;
+    freq[0] = 50e6;
     freq[1] = 200e6;
-    freq[2] = 100e6;
+    freq[2] = 500e6;
 
     float t0 = 50;
     float spread = 10;
     
     // create dielectric profile
     float epsz = 8.854e-12;
-    float epsr = 4.0;
-    float sigma = 0.04;
+    float epsr = 2.0;
+    float sigma = 0.01;
+    float tau = 0.001 * 1e-6;
+    float chi = 2.0;
 
     vec gax(ke,fill::ones);
     vec gbx(ke,fill::zeros);
-    
+    vec gcx(ke,fill::zeros);
+
     int k_start = int(ke * 0.5);    
    
-    gax.rows(k_start, ex.n_elem - 1) = gax.rows(k_start, ex.n_elem - 1) / ( epsr + ( sigma * dt / epsz ) );
+    gax.rows(k_start, ex.n_elem - 1) = gax.rows(k_start, ex.n_elem - 1) / ( epsr + ( sigma * dt / epsz ) + chi*dt/tau );
     gbx.rows(k_start, ex.n_elem - 1) = gbx.rows(k_start, ex.n_elem - 1) + ( sigma * dt / epsz ); 
+    gcx.rows(k_start, ex.n_elem - 1) = gcx.rows(k_start, ex.n_elem - 1) + ( chi * dt / tau );
+    
+    float del_exp = exp(-dt/tau);
 
     // to be used in the Fourier transform
     vec arg(n_freq);
@@ -62,13 +69,14 @@ void fdtd1d(int ke, int nsteps, int verbose, double frequency_signal, double del
         }
         
         // put a sinusoidal at the low end
-        pulse = exp(-0.5 * pow(((t0 - i) / spread),2) );
+        pulse = exp(-0.5 * pow(((t0 - i) / spread), 2) );
         dx[1] = pulse + dx[1];
         
         // calculate Ex field from Dx
         for(int k = 1; k < ke; k++){
-            ex[k] = gax[k] * ( dx[k] - ix[k] );
+            ex[k] = gax[k] * ( dx[k] - ix[k] - del_exp * sx[k]);
             ix[k] = ix[k] + ( gbx[k] * ex[k] );
+            sx[k] = del_exp * sx[k] + gcx[k] * ex[k];
         }
 
         // calulate the Fourier transform of Ex
@@ -80,9 +88,7 @@ void fdtd1d(int ke, int nsteps, int verbose, double frequency_signal, double del
         }
 
         // Fourier Transform of the input pulse
-        // used to normalize the output frequency domain signal
-        // I'll not use it for now
-        if(i < 100){
+        if(i < 3*t0){
             for(int m = 0; m < n_freq; m++){
                 real_in[m] = real_in[m] + cos(arg[m] * i) * ex[10];
                 imag_in[m] = imag_in[m] - sin(arg[m] * i) * ex[10];
