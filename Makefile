@@ -2,7 +2,7 @@
 # fdtd Makefile
 
 CXX	:= g++
-CXXFLAGS := -Wall -O2 -L/usr/lib64
+CXXFLAGS := -Wall -O2
 INCLUDES := -lstdc++ -lm -lhdf5 -llapack -lopenblas -larmadillo -ldl
 APPFLAGS := -DARMA_DONT_USE_WRAPPER -DARMA_USE_BLAS -DARMA_USE_LAPACK -DARMA_USE_HDF5
 
