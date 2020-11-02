@@ -1,7 +1,7 @@
 # fdtd
 
 ## compile with
-make FILE="fd3d_1_5.cpp"
+make VERSION="fdtd1d_v1.cpp"
 
 ## run with
 clear; ./fdtd -k 200 -f 700e6 -t 6e8 -n 500
