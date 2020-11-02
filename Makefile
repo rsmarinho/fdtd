@@ -1,6 +1,9 @@
 # Rafael Marinho
 # fdtd Makefile
 
+VERSION := fdtd1d_v2.cpp
+VOBJECT	:= $(subst generator,generated_source,$(VERSION:.cpp=.o))
+
 CXX	:= g++
 CXXFLAGS := -Wall -O2
 INCLUDES := -lstdc++ -lm -lhdf5 -llapack -lopenblas -larmadillo -ldl
@@ -10,7 +13,10 @@ SOURCES := $(wildcard *.cpp)
 OBJECTS := $(subst generator,generated_source,$(SOURCES:.cpp=.o))
 APP := fdtd
 
-all:	fdtd
+all:	version
+
+version:	$(OBJECTS)
+	$(CXX) $(INCLUDES) main.o $(VOBJECT) -o $(APP)
 
 fdtd:	$(OBJECTS)
 	$(CXX) $(INCLUDES) $^ -o $(APP)
