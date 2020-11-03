@@ -1,3 +1,4 @@
 fdtd
 *.hdf5
 *.o
+*.swp
