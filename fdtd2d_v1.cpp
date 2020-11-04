@@ -43,7 +43,7 @@ void fdtd1d(int ke, int nsteps, int verbose, double frequency_signal, double del
 
     // create the PML as described
     int npml = 8;
-    int xnum, xd, xxn, xn;
+    double xnum, xd, xxn, xn;
     for(int n = 0; n < npml; n++){
         xnum = npml - n;
         xd = npml;
@@ -77,7 +77,7 @@ void fdtd1d(int ke, int nsteps, int verbose, double frequency_signal, double del
         fj3[n] = (1 - xn) / (1 + xn);
         fj3[je - 2 - n] = (1 - xn) / (1 + xn);
     }
-
+    
     for(int i = 1; i <= nsteps; i++){
         
         // calculate Dz
